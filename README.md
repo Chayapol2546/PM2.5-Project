@@ -1,5 +1,4 @@
 # PM2.5-Project
-PM2.5 Project 
 At present, our world has a climate that changes frequently and warped very easily. In 
 addition, these weather conditions also have a significant impact on our daily lives, such as 
 transportation, activities, and health matters. The problem that is currently very current is the 
@@ -10,3 +9,11 @@ the location website. Data can be viewed through the Line app or through a websi
 data transmission relies on Wi-Fi as an intermediary to transfer data, which is real-time data 
 to a preset program. In addition, the device is small and portable, perfect for carrying around 
 to know what the values are, allowing you to protect yourself or avoid going to that area.
+
+## Equipment ##
+*Microcontroller NodeMCU ESP32
+*20x4 LCD I2C
+*Dust censor PMS7003
+*Jump wire (male to female)
+*Jump wire(male to male)
+*Breadboard 400 point
