@@ -11,9 +11,9 @@ to a preset program. In addition, the device is small and portable, perfect for 
 to know what the values are, allowing you to protect yourself or avoid going to that area.
 
 ## Equipment ##
-*Microcontroller NodeMCU ESP32
-*20x4 LCD I2C
-*Dust censor PMS7003
-*Jump wire (male to female)
-*Jump wire(male to male)
-*Breadboard 400 point
+* Microcontroller NodeMCU ESP32
+* 20x4 LCD I2C
+* Dust censor PMS7003
+* Jump wire (male to female)
+* Jump wire(male to male)
+* Breadboard 400 point
