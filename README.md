@@ -18,4 +18,24 @@ to know what the values are, allowing you to protect yourself or avoid going to 
 * Jump wire(male to male)
 * Breadboard 400 point
  
- ![](https://imgur.com/a/m2HcBWE)
+ ![](https://imgur.com/owaFJkT.jpg)
+ ![](https://imgur.com/XJ2sUn3.jpg)
+ 
+ ## How It Work ##
+When connecting a MicroUSB cable to the computer's power supply or serial port that supplies the power supply to the board, the microusb cable is connected to the computer's power supply or serial port. 
+NodeMCU ESP32 will be able to operate with a red light on the board (indicating that the circuit is working), and
+The sensor starts checking dust values at all times. Use laser light to detect dust particles, communicate with
+Serial/UART microcontroller is compatible with all microcontrollers. Compatible with Arduino
+NodeMCU will process and send the data to the cloud server.
+Cloud Servers like Google Drive send data to Line Developer to:
+Put data to line system notifications 
+
+ ## Result ##
+ The work of the PM 2.5 dust monitoring system device by IoT network applications 
+can be used in real time and alert on the Line BOT system, which can be achieved by the 
+function of the PMS7003 Sensor And the results from the experimental table It can be seen 
+that the operation of the sensor is reliable. And the function of the device board NodeMCU 
+ESP32, PMS7003, LCD 20x4 I2C, Arduino program is also working efficiently from the 
+work of PMS7003 that can transmit PM dust quantity data. To alert the system, Line aims to 
+develop a PM 2.5 dust monitoring system by using the IoT network and alerting the amount 
+of dust to users.
