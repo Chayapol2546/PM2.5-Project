@@ -1,0 +1,285 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <LiquidCrystal_PCF8574.h>
+#include <string>
+
+// WiFi Config
+#define WIFI_NAME "Home 136_2G"
+#define WIFI_PASS "87654321"
+
+// Senses IoT config
+#define SENSES_UID "588"
+#define SENSES_KEY "hv0sgffewfq5"
+
+// PMS7003 Wireing config
+#define PMS7003_TX_PIN 23
+
+LiquidCrystal_PCF8574 lcd(0x27);
+
+int PM_SP_UG_1_0, PM_SP_UG_2_5, PM_SP_UG_10_0;
+int PM_AE_UG_1_0, PM_AE_UG_2_5, PM_AE_UG_10_0;
+
+const char* server = "maker.ifttt.com";
+const char* resource ="http://maker.ifttt.com/trigger/sendPMValue/with/key/bN1GRPIyp9V-wMl6VdfkwA";
+const char* resource_1 ="http://maker.ifttt.com/trigger/PM_Update/with/key/bN1GRPIyp9V-wMl6VdfkwA";
+
+void setup() {
+  Serial.begin(115200);
+  Serial2.begin(9600, SERIAL_8N1, PMS7003_TX_PIN, -1); // Rx, Tx
+
+  lcd.begin(20, 4);
+  lcd.clear();
+  lcd.setBacklight(HIGH);
+
+  Serial.println();
+  Serial.println();
+  Serial.println("PMBox By R32_63");
+
+  lcd.setCursor(0, 0);
+  lcd.print("   PMBox By R32_63  ");
+
+  Serial.print("Connecting to ");
+  Serial.println(WIFI_NAME);
+  lcd.setCursor(0, 1);
+  lcd.print("WiFi Connecting to ");
+  lcd.setCursor(2, 2);
+  lcd.print(WIFI_NAME);
+
+  WiFi.begin(WIFI_NAME, WIFI_PASS);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print("   PMBox By R32_63  ");
+
+  lcd.setCursor(0, 1);
+  lcd.print("PM2.5:");
+
+  lcd.setCursor(0, 2);
+  lcd.print("PM1.0:");
+
+  lcd.setCursor(0, 3);
+  lcd.print("PM10.0:");
+
+  xTaskCreate([](void*) {
+    delay(3 * 1000); // delay 3s
+    while (1) {
+      // Send data to Senses IoT
+      send2Senses(1, PM_AE_UG_2_5);
+      send2Senses(2, PM_AE_UG_1_0);
+      send2Senses(3, PM_AE_UG_10_0);
+
+      delay(30 * 1000); // delay 30s
+    }
+  }, "SensesIoT_Task", 2048, NULL, 10, NULL);
+}
+
+void loop() {
+  if (pms_process()) {
+    Serial.print("PM2.5: ");
+    Serial.println(PM_AE_UG_2_5);
+    Serial.print("PM1.0: ");
+    Serial.println(PM_AE_UG_1_0);
+    Serial.print("PM10.0: ");
+    Serial.println(PM_AE_UG_10_0);
+
+    lcd.setCursor(8, 1);
+    lcd.print(PM_AE_UG_2_5);
+    lcd.print(" ug/m2   ");
+
+    lcd.setCursor(8, 2);
+    lcd.print(PM_AE_UG_1_0);
+    lcd.print(" ug/m2   ");
+
+    lcd.setCursor(8, 3);
+    lcd.print(PM_AE_UG_10_0);
+    lcd.print(" ug/m2   ");
+  }
+  makeIFTTTRequest();
+  makeIFTTTRequest_1();
+}
+
+void makeIFTTTRequest() {
+  Serial.print("Connecting to ");
+  Serial.print(server);
+
+  WiFiClient client;
+  int retries = 5;
+  while(!!!client.connect(server, 80) && (retries-- > 0)) {
+  Serial.print(".");
+  }
+  Serial.println();
+  if(!!!client.connected()) {
+  Serial.println("Failed to connect...");
+  }
+
+  Serial.print("Request resource: ");
+  Serial.println(resource);
+  String jsonObject = String("{\"value1\":\"") + PM_AE_UG_2_5 + "\",\"value2\":\"" + PM_AE_UG_1_0 + "\",\"value3\":\"" + PM_AE_UG_10_0 + "\"}";
+  client.println(String("POST ") + resource + " HTTP/1.1");
+  client.println(String("Host: ") + server);
+  client.println("Connection: close\r\nContent-Type: application/json");
+  client.print("Content-Length: ");
+  client.println(jsonObject.length());
+  client.println();
+  client.println(jsonObject);
+
+  int timeout = 5 * 10; // 5 seconds
+  while(!!!client.available() && (timeout-- > 0)){
+  delay(100);
+  }
+  if(!!!client.available()) {
+  Serial.println("No response...");
+  }
+  while(client.available()){
+  Serial.write(client.read());
+  }
+
+  Serial.println("\nclosing connection");
+  client.stop();
+  delay(20000);
+}
+
+void makeIFTTTRequest_1() {
+  Serial.print("Connecting to ");
+  Serial.print(server);
+
+  WiFiClient client;
+  int retries = 5;
+  while(!!!client.connect(server, 80) && (retries-- > 0)) {
+  Serial.print(".");
+  }
+  Serial.println();
+  if(!!!client.connected()) {
+  Serial.println("Failed to connect...");
+  }
+
+  Serial.print("Request resource: ");
+  Serial.println(resource_1);
+  String jsonObject = String("{\"value1\":\"") + PM_AE_UG_2_5 + "\",\"value2\":\"" + PM_AE_UG_1_0 + "\",\"value3\":\"" + PM_AE_UG_10_0 + "\"}";
+  client.println(String("POST ") + resource_1 + " HTTP/1.1");
+  client.println(String("Host: ") + server);
+  client.println("Connection: close\r\nContent-Type: application/json");
+  client.print("Content-Length: ");
+  client.println(jsonObject.length());
+  client.println();
+  client.println(jsonObject);
+
+  int timeout = 5 * 10; // 5 seconds
+  while(!!!client.available() && (timeout-- > 0)){
+  delay(100);
+  }
+  if(!!!client.available()) {
+  Serial.println("No response...");
+  }
+  while(client.available()){
+  Serial.write(client.read());
+  }
+
+  Serial.println("\nclosing connection");
+  client.stop();
+  //delay(20000);
+}
+
+bool pms_process() {
+  static uint8_t dataIndex = 0;
+  static uint16_t checksum = 0;
+  static uint16_t calculatedChecksum = 0;
+  static uint16_t frameLen = 0;
+  static uint8_t payload[30];
+  uint8_t ch;
+
+  while (Serial2.available()) {
+    ch = Serial2.read();
+
+    switch (dataIndex) {
+      case 0:
+        if (ch != 0x42) {
+          return false;
+        }
+        calculatedChecksum = ch;
+        break;
+
+      case 1:
+        if (ch != 0x4D) {
+          dataIndex = 0;
+          return false;
+        }
+        calculatedChecksum += ch;
+        break;
+
+      case 2:
+        frameLen = ch << 8;
+        calculatedChecksum += ch;
+        break;
+
+      case 3:
+        frameLen |= ch;
+        calculatedChecksum += ch;
+        break;
+
+      default:
+        if (dataIndex == frameLen + 2) {
+          checksum = ch << 8;
+        } else if (dataIndex == frameLen + 2 + 1) {
+          checksum |= ch;
+
+          if (calculatedChecksum == checksum) {
+            PM_SP_UG_1_0 = (((uint16_t)payload[0]) << 8) | payload[1];
+            PM_SP_UG_2_5 = (((uint16_t)payload[2]) << 8) | payload[3];
+            PM_SP_UG_10_0 = (((uint16_t)payload[4]) << 8) | payload[5];
+
+            PM_AE_UG_1_0 = (((uint16_t)payload[6]) << 8) | payload[7];
+            PM_AE_UG_2_5 = (((uint16_t)payload[8]) << 8) | payload[9];
+            PM_AE_UG_10_0 = (((uint16_t)payload[10]) << 8) | payload[11];
+          } else {
+            Serial.println("Error checksum");
+          }
+
+          dataIndex = 0;
+          return true;
+        } else {
+          calculatedChecksum += ch;
+          uint8_t payloadIndex = dataIndex - 4;
+
+          if (payloadIndex < sizeof(payload)) {
+            payload[payloadIndex] = ch;
+          }
+        }
+    }
+
+    dataIndex++;
+  }
+
+  return false;
+}
+
+void send2Senses(int slotnum, float data) {
+  HTTPClient http;
+
+  http.begin("http://www.sensesiot.com:4000/send/" SENSES_UID "/" SENSES_KEY "/" + String(slotnum) + "/" + String(data));
+
+  Serial.print("[HTTP] GET... ");
+  int httpCode = http.GET();
+  Serial.println(httpCode);
+  if (httpCode > 0) {
+    if (httpCode == HTTP_CODE_OK) {
+      String payload = http.getString();
+      Serial.println(payload);
+    }
+  } else {
+    Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+  }
+
+  http.end();
+}
