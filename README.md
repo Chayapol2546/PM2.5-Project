@@ -17,3 +17,5 @@ to know what the values are, allowing you to protect yourself or avoid going to 
 * Jump wire (male to female)
 * Jump wire(male to male)
 * Breadboard 400 point
+ 
+ ![](https://imgur.com/a/m2HcBWE)
